@@ -1,0 +1,191 @@
+:root {
+  --fondo: #f4f5f9;
+  --panel: #ffffff;
+  --texto: #1d2230;
+  --suave: #5f6679;
+  --borde: #d9dce6;
+  --acento: #3b5bdb;
+  --acento-texto: #ffffff;
+  --acento-suave: #e7ecff;
+  --ok: #2b8a3e;
+  --ok-suave: #e6f6ea;
+  --error: #c92a2a;
+  --error-suave: #fdecec;
+  --codigo-fondo: #1f2433;
+  --codigo-texto: #e8ecf6;
+  --casilla: 64px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #12141b;
+    --panel: #1b1e28;
+    --texto: #e8eaf2;
+    --suave: #a0a6b8;
+    --borde: #313646;
+    --acento: #7390ff;
+    --acento-texto: #0d1020;
+    --acento-suave: #232b4a;
+    --ok: #5cc27a;
+    --ok-suave: #16291d;
+    --error: #ff7070;
+    --error-suave: #331a1c;
+    --codigo-fondo: #0d0f15;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.app { max-width: 1200px; margin: 0 auto; padding: 16px; }
+.cabecera h1 { font-size: 1.6rem; margin: 8px 0 20px; text-align: center; }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--borde);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.panel.ancho { max-width: none; }
+.panel h2 { font-size: 1.2rem; margin: 0 0 12px; }
+.panel h2:not(:first-child) { margin-top: 28px; }
+
+/* ── Configuración ── */
+.opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; }
+.tarjeta {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; min-height: 96px; padding: 12px;
+  border: 2px solid var(--borde); border-radius: 14px;
+  background: var(--panel); color: var(--texto);
+  font: inherit; cursor: pointer; transition: border-color .15s, background .15s;
+}
+.tarjeta:hover { border-color: var(--acento); }
+.tarjeta.activa { border-color: var(--acento); background: var(--acento-suave); }
+.tarjeta-num { font-size: 2rem; font-weight: 700; line-height: 1; }
+.tarjeta-sub { font-size: .9rem; color: var(--suave); }
+.tarjeta input {
+  width: 100%; max-width: 90px; padding: 6px; text-align: center;
+  font: inherit; font-size: 1.3rem; font-weight: 700;
+  border: 1px solid var(--borde); border-radius: 8px; background: var(--panel); color: var(--texto);
+}
+.resumen { color: var(--suave); margin: 24px 0 16px; }
+
+/* ── Botones ── */
+.boton {
+  font: inherit; font-weight: 600; border-radius: 10px; padding: 10px 20px;
+  border: 2px solid var(--acento); cursor: pointer;
+}
+.boton.principal { background: var(--acento); color: var(--acento-texto); }
+.boton.secundario { background: transparent; color: var(--acento); }
+.boton.grande { font-size: 1.3rem; padding: 14px 36px; letter-spacing: .03em; }
+.boton.pequeno { font-size: .85rem; padding: 4px 12px; background: var(--error); border-color: var(--error); color: #fff; }
+.boton:disabled { opacity: .45; cursor: not-allowed; }
+.acciones { display: flex; justify-content: center; flex-wrap: wrap; gap: 16px; margin-top: 28px; }
+
+.aviso { color: var(--error); font-weight: 600; text-align: center; }
+.cargando { text-align: center; color: var(--suave); }
+
+/* ── Ruletas ── */
+.ruletas { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+.ruleta {
+  border: 2px solid var(--borde); border-radius: 14px; padding: 12px;
+  background: var(--fondo); transition: border-color .2s, background .2s;
+}
+.ruleta.detenida { border-color: var(--ok); }
+.ruleta.duplicada { border-color: var(--error); background: var(--error-suave); }
+.ruleta-titulo { font-weight: 700; text-align: center; margin-bottom: 8px; }
+.ruleta-ventana {
+  position: relative; height: calc(var(--casilla) * 3); overflow: hidden;
+  border-radius: 10px; background: var(--panel); border: 1px solid var(--borde);
+}
+.ruleta-ventana::before, .ruleta-ventana::after {
+  content: ''; position: absolute; left: 0; right: 0; height: var(--casilla); z-index: 1; pointer-events: none;
+}
+.ruleta-ventana::before { top: 0; background: linear-gradient(var(--panel), transparent); }
+.ruleta-ventana::after { bottom: 0; background: linear-gradient(transparent, var(--panel)); }
+.ruleta-marco {
+  position: absolute; left: 4px; right: 4px; top: var(--casilla); height: var(--casilla);
+  border: 3px solid var(--acento); border-radius: 8px; pointer-events: none; z-index: 2;
+}
+.ruleta.duplicada .ruleta-marco { border-color: var(--error); }
+.ruleta-tira { will-change: transform; }
+.casilla {
+  height: var(--casilla); display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 10px; text-align: center;
+}
+.casilla-id { font-size: 1.35rem; font-weight: 800; line-height: 1.1; }
+.casilla-tema { font-size: .78rem; color: var(--suave); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.ruleta-pie { min-height: 36px; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.estado { font-size: .9rem; color: var(--suave); }
+.estado.ok { color: var(--ok); font-weight: 600; }
+.estado.error { color: var(--error); font-weight: 700; }
+
+/* ── Examen ── */
+.cronometro {
+  position: sticky; top: 8px; z-index: 5;
+  width: fit-content; margin: 0 auto 20px; padding: 8px 28px;
+  font-size: 2.6rem; font-weight: 800; font-variant-numeric: tabular-nums;
+  background: var(--panel); border: 3px solid var(--acento); border-radius: 14px;
+  color: var(--acento);
+}
+.cronometro.urgente { color: var(--error); border-color: var(--error); animation: latido 1s infinite; }
+.cronometro.agotado { color: #fff; background: var(--error); border-color: var(--error); }
+@keyframes latido { 50% { transform: scale(1.06); } }
+
+.preguntas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 16px; }
+.pregunta {
+  border: 1px solid var(--borde); border-radius: 12px; padding: 16px;
+  display: flex; flex-direction: column; gap: 10px; min-width: 0;
+}
+.pregunta.correcta { border: 2px solid var(--ok); background: var(--ok-suave); }
+.pregunta.incorrecta { border: 2px solid var(--error); background: var(--error-suave); }
+.pregunta header { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.pregunta-num { font-weight: 800; font-size: 1.1rem; }
+.pregunta-tema { font-size: .85rem; color: var(--suave); }
+.pregunta-texto { margin: 0; font-weight: 600; }
+
+.codigo {
+  margin: 0; padding: 14px 16px; border-radius: 10px; overflow-x: auto;
+  background: var(--codigo-fondo); color: var(--codigo-texto);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .95rem; line-height: 1.55;
+}
+.hueco { background: #ffd43b; color: #1d2230; border-radius: 4px; padding: 0 2px; font-weight: 700; }
+
+.respuesta { display: flex; align-items: center; gap: 10px; font-weight: 600; margin-top: auto; }
+.respuesta input {
+  flex: 1; min-width: 0; padding: 10px 12px; font-size: 1.1rem;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  border: 2px solid var(--borde); border-radius: 8px; background: var(--panel); color: var(--texto);
+}
+.respuesta input:focus { outline: none; border-color: var(--acento); }
+
+/* ── Resultados ── */
+.puntaje { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+.puntaje-num { font-size: 3rem; font-weight: 800; color: var(--acento); line-height: 1.1; }
+.puntaje-sub { color: var(--suave); }
+.comparacion { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; margin: 0; }
+.comparacion dt { font-weight: 600; color: var(--suave); }
+.comparacion dd { margin: 0; }
+.comparacion code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  background: var(--panel); border: 1px solid var(--borde); border-radius: 6px; padding: 1px 6px;
+}
+.alternativas { font-size: .85rem; color: var(--suave); }
+
+@media (max-width: 520px) {
+  body { font-size: 16px; }
+  .panel { padding: 16px; }
+  .comparacion { grid-template-columns: 1fr; }
+}
