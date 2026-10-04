@@ -3,24 +3,38 @@ import Configuracion from './components/Configuracion'
 import Sorteo from './components/Sorteo'
 import Examen from './components/Examen'
 import Resultados from './components/Resultados'
-import { cargarPreguntas } from './lib/preguntas'
+import { agruparPorModulo, cargarConfig, cargarPreguntas } from './lib/preguntas'
 
 export default function App() {
   const [banco, setBanco] = useState(null)
   const [error, setError] = useState(null)
   const [fase, setFase] = useState('config') // config → sorteo → examen → resultados
-  const [config, setConfig] = useState({ cantidad: 3, segundos: 90 })
+  const [titulo, setTitulo] = useState('')
+  const [config, setConfig] = useState({ modo: 'aleatorio', cantidad: 3, segundos: 90 })
   const [seleccion, setSeleccion] = useState([])
   const [respuestas, setRespuestas] = useState([])
 
   useEffect(() => {
     cargarPreguntas().then(setBanco).catch((e) => setError(e.message))
+    cargarConfig().then((c) => {
+      setTitulo(c.titulo)
+      document.title = c.titulo
+    })
   }, [])
 
-  const sortear = (cantidad, segundos) => {
-    setConfig({ cantidad, segundos })
+  const sortear = (nuevaConfig) => {
+    setConfig(nuevaConfig)
     setFase('sorteo')
   }
+
+  // Una ranura por ruleta: en "aleatorio" todas sortean del banco completo;
+  // en "por módulo" cada módulo aporta `cantidad` ranuras que sortean solo dentro de él.
+  const ranuras = () =>
+    config.modo === 'porModulo'
+      ? agruparPorModulo(banco).flatMap(({ modulo, preguntas }) =>
+          Array.from({ length: config.cantidad }, () => ({ pool: preguntas, etiqueta: modulo })),
+        )
+      : Array.from({ length: config.cantidad }, () => ({ pool: banco }))
 
   const comenzar = (preguntas) => {
     setSeleccion(preguntas)
@@ -39,14 +53,14 @@ export default function App() {
   return (
     <div className="app">
       <header className="cabecera">
-        <h1>Ruleta de examen · Python</h1>
+        <h1>{titulo}</h1>
       </header>
       <main>
         {error && <p className="aviso">{error}</p>}
         {!error && !banco && <p className="cargando">Cargando preguntas…</p>}
-        {banco && fase === 'config' && <Configuracion totalBanco={banco.length} inicial={config} onSortear={sortear} />}
+        {banco && fase === 'config' && <Configuracion banco={banco} inicial={config} onSortear={sortear} />}
         {banco && fase === 'sorteo' && (
-          <Sorteo banco={banco} cantidad={config.cantidad} onComenzar={comenzar} onCancelar={() => setFase('config')} />
+          <Sorteo ranuras={ranuras()} onComenzar={comenzar} onCancelar={() => setFase('config')} />
         )}
         {fase === 'examen' && (
           <Examen

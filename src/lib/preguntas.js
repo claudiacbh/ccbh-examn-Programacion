@@ -30,3 +30,29 @@ export function esCorrecta(respuesta, pregunta) {
 export function aleatorio(max) {
   return Math.floor(Math.random() * max)
 }
+
+// Agrupa el banco por la columna `modulo` del CSV, ordenado por nombre ("0 · …", "1 · …", …).
+export function agruparPorModulo(banco) {
+  const grupos = new Map()
+  for (const p of banco) {
+    const modulo = (p.modulo ?? '').trim() || 'Sin módulo'
+    if (!grupos.has(modulo)) grupos.set(modulo, [])
+    grupos.get(modulo).push(p)
+  }
+  return [...grupos.entries()]
+    .sort(([a], [b]) => a.localeCompare(b, 'es', { numeric: true }))
+    .map(([modulo, preguntas]) => ({ modulo, preguntas }))
+}
+
+const CONFIG_POR_DEFECTO = { titulo: 'Ruleta de examen · Python' }
+
+// config.json vive en public/ para poder cambiar el título sin recompilar.
+export async function cargarConfig() {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}config.json`, { cache: 'no-store' })
+    if (!res.ok) return CONFIG_POR_DEFECTO
+    return { ...CONFIG_POR_DEFECTO, ...(await res.json()) }
+  } catch {
+    return CONFIG_POR_DEFECTO
+  }
+}

@@ -1,6 +1,11 @@
 import { useState } from 'react'
+import { agruparPorModulo } from '../lib/preguntas'
 
-const CANTIDADES = [2, 3, 4]
+const CANTIDADES = [1, 2, 3, 4]
+const MODOS = [
+  { id: 'aleatorio', titulo: 'Aleatorio', detalle: 'De todos los módulos' },
+  { id: 'porModulo', titulo: 'Aleatorio por módulo', detalle: 'La misma cantidad de cada módulo' },
+]
 const TIEMPOS = [60, 90, 120, 180]
 
 function Opciones({ valores, valor, onCambiar, sufijo, min, max }) {
@@ -34,29 +39,55 @@ function Opciones({ valores, valor, onCambiar, sufijo, min, max }) {
   )
 }
 
-export default function Configuracion({ totalBanco, inicial, onSortear }) {
+export default function Configuracion({ banco, inicial, onSortear }) {
+  const [modo, setModo] = useState(inicial.modo)
   const [cantidad, setCantidad] = useState(inicial.cantidad)
   const [segundos, setSegundos] = useState(inicial.segundos)
 
-  const cantidadOk = Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= totalBanco
+  const modulos = agruparPorModulo(banco)
+  const porModulo = modo === 'porModulo'
+  const maximo = porModulo ? Math.min(...modulos.map((m) => m.preguntas.length)) : banco.length
+  const total = porModulo ? cantidad * modulos.length : cantidad
+
+  const cantidadOk = Number.isInteger(cantidad) && cantidad >= 1 && cantidad <= maximo
   const segundosOk = Number.isInteger(segundos) && segundos >= 1
 
   return (
     <section className="panel">
-      <h2>¿Cuántas preguntas?</h2>
-      <Opciones valores={CANTIDADES} valor={cantidad} onCambiar={setCantidad} min={1} max={totalBanco} />
-      {!cantidadOk && <p className="aviso">Elige un número entre 1 y {totalBanco}.</p>}
+      <h2>Modo</h2>
+      <div className="opciones modos">
+        {MODOS.map((m) => (
+          <button key={m.id} className={`tarjeta ${modo === m.id ? 'activa' : ''}`} onClick={() => setModo(m.id)}>
+            <span className="tarjeta-modo">{m.titulo}</span>
+            <span className="tarjeta-sub">{m.detalle}</span>
+          </button>
+        ))}
+      </div>
+
+      <h2>{porModulo ? '¿Cuántas preguntas por módulo?' : '¿Cuántas preguntas?'}</h2>
+      <Opciones valores={CANTIDADES} valor={cantidad} onCambiar={setCantidad} min={1} max={maximo} />
+      {!cantidadOk && (
+        <p className="aviso">
+          Elige un número entre 1 y {maximo}
+          {porModulo && ' (el módulo más pequeño tiene ' + maximo + ' preguntas)'}.
+        </p>
+      )}
 
       <h2>Tiempo por pregunta</h2>
       <Opciones valores={TIEMPOS} valor={segundos} onCambiar={setSegundos} sufijo="seg" min={1} />
       {!segundosOk && <p className="aviso">Escribe un número entero de segundos.</p>}
 
       <p className="resumen">
-        Banco: {totalBanco} preguntas
-        {cantidadOk && segundosOk && <> · Tiempo total: {formatoTiempo(cantidad * segundos)}</>}
+        Banco: {banco.length} preguntas en {modulos.length} módulos
+        {cantidadOk && porModulo && <> · {cantidad} × {modulos.length} módulos = {total} preguntas</>}
+        {cantidadOk && segundosOk && <> · Tiempo total: {formatoTiempo(total * segundos)}</>}
       </p>
 
-      <button className="boton principal" disabled={!cantidadOk || !segundosOk} onClick={() => onSortear(cantidad, segundos)}>
+      <button
+        className="boton principal"
+        disabled={!cantidadOk || !segundosOk}
+        onClick={() => onSortear({ modo, cantidad, segundos })}
+      >
         Sortear preguntas
       </button>
     </section>

@@ -189,3 +189,9 @@ body {
   .panel { padding: 16px; }
   .comparacion { grid-template-columns: 1fr; }
 }
+
+/* ── Modo y grupos por módulo ── */
+.opciones.modos { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.tarjeta-modo { font-size: 1.15rem; font-weight: 700; text-align: center; }
+.grupo-ruletas + .grupo-ruletas { margin-top: 24px; }
+.grupo-titulo { font-size: 1.05rem; margin: 0 0 10px; color: var(--acento); }
