@@ -1,13 +1,41 @@
 import Papa from 'papaparse'
 
-// El CSV vive en public/ para poder editarlo sin recompilar la app.
-export async function cargarPreguntas() {
-  const res = await fetch(`${import.meta.env.BASE_URL}preguntas.csv`, { cache: 'no-store' })
-  if (!res.ok) throw new Error(`No se pudo leer preguntas.csv (HTTP ${res.status})`)
-  const { data } = Papa.parse(await res.text(), { header: true, skipEmptyLines: true })
-  return data
-    .filter((fila) => fila.id && fila.pregunta && fila.respuesta)
-    .map((fila) => ({ ...fila, id: String(fila.id).trim(), codigo: fila.codigo ?? '' }))
+export const COLUMNAS = ['id', 'modulo', 'tema', 'tipo', 'pregunta', 'codigo', 'respuesta', 'alternativas']
+const OBLIGATORIAS = ['id', 'pregunta', 'respuesta']
+
+// Convierte el texto de un preguntas.csv en el banco de preguntas.
+// Lanza un Error con un mensaje para el usuario si el archivo no sirve;
+// devuelve `avisos` con las filas que se descartaron.
+export function parsearPreguntas(texto) {
+  const { data, meta } = Papa.parse(String(texto ?? '').replace(/^\uFEFF/, ''), {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h) => h.trim().toLowerCase(),
+  })
+
+  const faltan = OBLIGATORIAS.filter((c) => !(meta.fields ?? []).includes(c))
+  if (faltan.length) throw new Error(`Al archivo le faltan las columnas: ${faltan.join(', ')}.`)
+
+  const avisos = []
+  const vistos = new Set()
+  const preguntas = []
+  data.forEach((fila, i) => {
+    const linea = i + 2 // +1 por el encabezado, +1 porque las filas empiezan en 1
+    const id = String(fila.id ?? '').trim()
+    if (!id || !fila.pregunta?.trim() || !fila.respuesta?.trim()) {
+      avisos.push(`Fila ${linea}: falta id, pregunta o respuesta; se omitió.`)
+      return
+    }
+    if (vistos.has(id)) {
+      avisos.push(`Fila ${linea}: el id ${id} está repetido; se omitió.`)
+      return
+    }
+    vistos.add(id)
+    preguntas.push({ ...fila, id, tema: fila.tema ?? '', modulo: fila.modulo ?? '', codigo: fila.codigo ?? '' })
+  })
+
+  if (!preguntas.length) throw new Error('El archivo no tiene ninguna pregunta válida.')
+  return { preguntas, avisos }
 }
 
 // Quita espacios sobrantes y comillas externas: "2020", '2020' y 2020 cuentan igual.

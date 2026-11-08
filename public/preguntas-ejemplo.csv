@@ -1,0 +1,12 @@
+id,modulo,tema,tipo,pregunta,codigo,respuesta,alternativas
+1,0 · Introducción,input() entrega texto,valor,El usuario digita 20. ¿Cuánto vale pegado?,"r = input(""Número: "")
+pegado = r + r",2020,
+2,1 · Condicionales,Par o impar con %,completar,Completa el espacio ____ con el operador que permite saber si el número es par.,"if numero ____ 2 == 0:
+    print(""Es par"")",%,
+3,2 · Ciclos,range con paso,conteo,¿Cuántos números imprime este código?,"for j in range(0, 30, 3):
+    print(j)",10,
+4,3 · Funciones,Varios parámetros,completar,Completa el espacio ____ para que la función devuelva el área del rectángulo.,"def area(base, altura):
+    return ____",base * altura,base*altura|altura * base|altura*base
+5,4 · Listas,.sort(),salida,¿Qué imprime exactamente este código?,"nums = [5, 3, 9]
+nums.sort()
+print(nums)","[3, 5, 9]","[3,5,9]"

@@ -195,3 +195,40 @@ body {
 .tarjeta-modo { font-size: 1.15rem; font-weight: 700; text-align: center; }
 .grupo-ruletas + .grupo-ruletas { margin-top: 24px; }
 .grupo-titulo { font-size: 1.05rem; margin: 0 0 10px; color: var(--acento); }
+
+/* ── Banco de preguntas ── */
+.explicacion { margin: 0 0 16px; color: var(--suave); }
+.explicacion code, .formato code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: .9em;
+  background: var(--fondo); border: 1px solid var(--borde); border-radius: 6px; padding: 0 5px;
+}
+.zona-subida {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 120px; padding: 16px; text-align: center; cursor: pointer;
+  border: 2px dashed var(--borde); border-radius: 14px; transition: border-color .15s, background .15s;
+}
+.zona-subida:hover, .zona-subida.activa, .zona-subida:focus-within { border-color: var(--acento); background: var(--acento-suave); }
+.zona-subida input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.zona-titulo { font-weight: 700; font-size: 1.1rem; }
+.bancos { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.banco {
+  display: flex; align-items: stretch;
+  border: 2px solid var(--borde); border-radius: 12px; overflow: hidden; transition: border-color .15s, background .15s;
+}
+.banco:hover { border-color: var(--acento); }
+.banco.activa { border-color: var(--acento); background: var(--acento-suave); }
+.banco-elegir {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  padding: 10px 14px; border: 0; background: transparent; color: var(--texto); font: inherit; text-align: left; cursor: pointer;
+}
+.banco-nombre { font-weight: 700; overflow-wrap: anywhere; }
+.banco-borrar {
+  border: 0; border-left: 1px solid var(--borde); background: transparent; color: var(--suave);
+  font: inherit; padding: 0 16px; cursor: pointer;
+}
+.banco-borrar:hover { color: var(--error); background: var(--error-suave); }
+.avisos, .formato { margin-top: 16px; color: var(--suave); font-size: .95rem; }
+.avisos summary, .formato summary { cursor: pointer; font-weight: 600; }
+.avisos ul { margin: 8px 0 0; padding-left: 20px; }
+.formato p { margin: 8px 0 0; }
+a.boton { display: inline-block; text-decoration: none; }

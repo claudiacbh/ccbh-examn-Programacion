@@ -39,7 +39,7 @@ function Opciones({ valores, valor, onCambiar, sufijo, min, max }) {
   )
 }
 
-export default function Configuracion({ banco, inicial, onSortear }) {
+export default function Configuracion({ banco, nombre, inicial, onSortear, onCambiarBanco }) {
   const [modo, setModo] = useState(inicial.modo)
   const [cantidad, setCantidad] = useState(inicial.cantidad)
   const [segundos, setSegundos] = useState(inicial.segundos)
@@ -78,18 +78,21 @@ export default function Configuracion({ banco, inicial, onSortear }) {
       {!segundosOk && <p className="aviso">Escribe un número entero de segundos.</p>}
 
       <p className="resumen">
-        Banco: {banco.length} preguntas en {modulos.length} módulos
+        Banco «{nombre}»: {banco.length} preguntas en {modulos.length} módulos
         {cantidadOk && porModulo && <> · {cantidad} × {modulos.length} módulos = {total} preguntas</>}
         {cantidadOk && segundosOk && <> · Tiempo total: {formatoTiempo(total * segundos)}</>}
       </p>
 
-      <button
-        className="boton principal"
-        disabled={!cantidadOk || !segundosOk}
-        onClick={() => onSortear({ modo, cantidad, segundos })}
-      >
-        Sortear preguntas
-      </button>
+      <div className="acciones">
+        <button className="boton secundario" onClick={onCambiarBanco}>Cambiar banco</button>
+        <button
+          className="boton principal"
+          disabled={!cantidadOk || !segundosOk}
+          onClick={() => onSortear({ modo, cantidad, segundos })}
+        >
+          Sortear preguntas
+        </button>
+      </div>
     </section>
   )
 }

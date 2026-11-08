@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react'
+import Banco from './components/Banco'
 import Configuracion from './components/Configuracion'
 import Sorteo from './components/Sorteo'
 import Examen from './components/Examen'
 import Resultados from './components/Resultados'
-import { agruparPorModulo, cargarConfig, cargarPreguntas } from './lib/preguntas'
+import { agruparPorModulo, cargarConfig } from './lib/preguntas'
 
 export default function App() {
-  const [banco, setBanco] = useState(null)
-  const [error, setError] = useState(null)
-  const [fase, setFase] = useState('config') // config → sorteo → examen → resultados
+  const [banco, setBanco] = useState(null) // { nombre, preguntas }
+  const [fase, setFase] = useState('banco') // banco → config → sorteo → examen → resultados
   const [titulo, setTitulo] = useState('')
   const [config, setConfig] = useState({ modo: 'aleatorio', cantidad: 3, segundos: 90 })
   const [seleccion, setSeleccion] = useState([])
   const [respuestas, setRespuestas] = useState([])
 
   useEffect(() => {
-    cargarPreguntas().then(setBanco).catch((e) => setError(e.message))
     cargarConfig().then((c) => {
       setTitulo(c.titulo)
       document.title = c.titulo
     })
   }, [])
+
+  const elegirBanco = (nuevo) => {
+    setBanco(nuevo)
+    setFase('config')
+  }
 
   const sortear = (nuevaConfig) => {
     setConfig(nuevaConfig)
@@ -31,10 +35,10 @@ export default function App() {
   // en "por módulo" cada módulo aporta `cantidad` ranuras que sortean solo dentro de él.
   const ranuras = () =>
     config.modo === 'porModulo'
-      ? agruparPorModulo(banco).flatMap(({ modulo, preguntas }) =>
+      ? agruparPorModulo(banco.preguntas).flatMap(({ modulo, preguntas }) =>
           Array.from({ length: config.cantidad }, () => ({ pool: preguntas, etiqueta: modulo })),
         )
-      : Array.from({ length: config.cantidad }, () => ({ pool: banco }))
+      : Array.from({ length: config.cantidad }, () => ({ pool: banco.preguntas }))
 
   const comenzar = (preguntas) => {
     setSeleccion(preguntas)
@@ -56,9 +60,16 @@ export default function App() {
         <h1>{titulo}</h1>
       </header>
       <main>
-        {error && <p className="aviso">{error}</p>}
-        {!error && !banco && <p className="cargando">Cargando preguntas…</p>}
-        {banco && fase === 'config' && <Configuracion banco={banco} inicial={config} onSortear={sortear} />}
+        {fase === 'banco' && <Banco onElegir={elegirBanco} />}
+        {banco && fase === 'config' && (
+          <Configuracion
+            banco={banco.preguntas}
+            nombre={banco.nombre}
+            inicial={config}
+            onSortear={sortear}
+            onCambiarBanco={() => setFase('banco')}
+          />
+        )}
         {banco && fase === 'sorteo' && (
           <Sorteo ranuras={ranuras()} onComenzar={comenzar} onCancelar={() => setFase('config')} />
         )}
